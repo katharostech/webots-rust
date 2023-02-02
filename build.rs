@@ -37,6 +37,7 @@ fn main() {
         .blocklist_item("FP_NORMAL")
         .blocklist_item("FP_SUBNORMAL")
         .blocklist_item("FP_ZERO")
+        .blocklist_file(".*math.*")
         .generate()
         .expect("Unable to generate bindings");
 
