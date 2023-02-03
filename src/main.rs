@@ -1,42 +1,57 @@
 #![allow(clippy::approx_constant)]
 
-use webots_rs::sys::WbDeviceTag;
+use std::time::Duration;
 
-fn main() {
-    const INFINITY: f64 = 1.0 / 0.0;
-    const MAX_SPEED: f64 = 6.28;
-    const TIME_STEP: i32 = 64;
+use webots::prelude::*;
 
-    println!("Rust controller has started");
-    webots_rs::wb_robot_init();
+const TIME_STEP: Duration = Duration::from_millis(64);
+const MAX_SPEED: f64 = 6.28;
 
-    let distance_sensor_names = vec!["ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7"];
-    let distance_sensors: Vec<WbDeviceTag> = distance_sensor_names
-        .iter()
-        .map(|name| {
-            let sensor: WbDeviceTag = webots_rs::wb_robot_get_device(name);
-            webots_rs::wb_distance_sensor_enable(sensor, TIME_STEP);
-            sensor
-        })
-        .collect();
+struct MyRobot {
+    distance_sensors: Vec<DistanceSensor>,
+    left_motor: Motor,
+    right_motor: Motor,
+}
 
-    let left_motor = webots_rs::wb_robot_get_device("left wheel motor");
-    let right_motor = webots_rs::wb_robot_get_device("right wheel motor");
-    webots_rs::wb_motor_set_position(left_motor, INFINITY);
-    webots_rs::wb_motor_set_position(right_motor, INFINITY);
-
-    webots_rs::wb_motor_set_velocity(left_motor, 0.1 * MAX_SPEED);
-    webots_rs::wb_motor_set_velocity(right_motor, 0.1 * MAX_SPEED);
-
-    loop {
-        if webots_rs::wb_robot_step(TIME_STEP) == -1 {
-            break;
-        }
-
-        let distance_values: Vec<f64> = distance_sensors
+impl MyRobot {
+    fn new() -> Self {
+        let distance_sensor_names = vec!["ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7"];
+        let distance_sensors: Vec<DistanceSensor> = distance_sensor_names
             .iter()
-            .map(|sensor| webots_rs::wb_distance_sensor_get_value(*sensor))
+            .map(|name| {
+                let sensor = DistanceSensor::new(name);
+                sensor.enable(TIME_STEP);
+                sensor
+            })
             .collect();
+
+        let left_motor = Motor::new("left wheel motor");
+        let right_motor = Motor::new("right wheel motor");
+
+        left_motor.set_position(f64::INFINITY);
+        right_motor.set_position(f64::INFINITY);
+        left_motor.set_velocity(0.1 * MAX_SPEED);
+        right_motor.set_velocity(0.1 * MAX_SPEED);
+
+        Self {
+            distance_sensors,
+            left_motor,
+            right_motor,
+        }
+    }
+}
+
+impl Robot for MyRobot {
+    fn time_step(&self) -> Duration {
+        TIME_STEP
+    }
+
+    fn step(&mut self) {
+        let distance_values = self
+            .distance_sensors
+            .iter()
+            .map(|sensor| sensor.value())
+            .collect::<Vec<_>>();
 
         // detect obsctacles
         let left_obstacle =
@@ -60,9 +75,14 @@ fn main() {
         }
 
         // write actuators inputs
-        webots_rs::wb_motor_set_velocity(left_motor, left_speed);
-        webots_rs::wb_motor_set_velocity(right_motor, right_speed);
+        self.left_motor.set_velocity(left_speed);
+        self.right_motor.set_velocity(right_speed);
     }
+}
 
-    webots_rs::wb_robot_cleanup();
+fn main() {
+    webots::init();
+
+    println!("Rust controller has started");
+    MyRobot::new().run();
 }

@@ -5,7 +5,7 @@ build:
 	cargo build
 	mkdir -p sample_project/controllers/rust_controller
 	rm -f sample_project/controllers/rust_controller/rust_controller
-	cp target/debug/webots-rs sample_project/controllers/rust_controller/rust_controller
+	cp target/debug/webots sample_project/controllers/rust_controller/rust_controller
 
 	@echo
 	@echo Done. Now you can run the simulation in Webots.

@@ -7,42 +7,89 @@ pub mod sys {
     include!("bindings.rs");
 }
 
-use sys::WbDeviceTag;
-use std::ffi::CString;
+pub mod prelude {
+    pub use super::{motor::*, robot::*, sensors::*, JointType};
+}
 
-pub fn wb_distance_sensor_enable(tag: WbDeviceTag, sampling_period: i32) {
+/// Initialize webot controller. Must be called before any other functions or devices, etc. can be
+/// called or created.
+pub fn init() {
     unsafe {
-        crate::sys::wb_distance_sensor_enable(tag, sampling_period);
+        sys::wb_robot_init();
     }
 }
 
-pub fn wb_distance_sensor_get_value(tag: WbDeviceTag) -> f64 {
-    unsafe { crate::sys::wb_distance_sensor_get_value(tag) }
+#[derive(Debug, Clone, Copy)]
+pub enum JointType {
+    Linear,
+    Rotational,
 }
 
-pub fn wb_motor_set_position(device: WbDeviceTag, position: f64) {
-    unsafe { crate::sys::wb_motor_set_position(device, position) }
-}
-
-pub fn wb_motor_set_velocity(device: WbDeviceTag, velocity: f64) {
-    unsafe { crate::sys::wb_motor_set_velocity(device, velocity) }
-}
-
-pub fn wb_robot_get_device(id: &str) -> WbDeviceTag {
-    let name = CString::new(id).expect("CString::new failed");
-    unsafe { crate::sys::wb_robot_get_device(name.as_ptr()) }
-}
-
-pub fn wb_robot_cleanup() {
-    unsafe { crate::sys::wb_robot_cleanup() }
-}
-
-pub fn wb_robot_init() {
-    unsafe {
-        crate::sys::wb_robot_init();
+impl JointType {
+    pub(crate) fn from_ffi(value: sys::WbJointType) -> Self {
+        match value {
+            sys::WbJointType_WB_LINEAR => JointType::Linear,
+            sys::WbJointType_WB_ROTATIONAL => JointType::Rotational,
+            _ => unreachable!(),
+        }
     }
 }
 
-pub fn wb_robot_step(step: i32) -> i32 {
-    unsafe { crate::sys::wb_robot_step(step) }
+pub mod sensors {
+    use std::{convert::TryInto, time::Duration};
+
+    use super::{prelude::*, sys};
+
+    pub use distance_sensor::*;
+    mod distance_sensor;
+}
+pub mod motor;
+
+pub mod robot {
+    use super::sys;
+
+    use std::{convert::TryInto, ffi::CString, time::Duration};
+
+    #[derive(Debug, Clone, Copy)]
+    pub struct Device {
+        pub tag: sys::WbDeviceTag,
+    }
+
+    impl Device {
+        pub fn new(name: &str) -> Self {
+            let name = CString::new(name).unwrap();
+            let tag = unsafe { sys::wb_robot_get_device(name.as_ptr()) };
+
+            Self { tag }
+        }
+    }
+
+    pub trait Robot {
+        /// The time to advance during the next simulation step.
+        fn time_step(&self) -> Duration;
+
+        /// Step the robot simulation
+        fn step(&mut self);
+
+        /// Run the robot controller.
+        fn run(&mut self) {
+            loop {
+                let step_duration = self
+                    .time_step()
+                    .as_millis()
+                    .try_into()
+                    .expect("Duration too long");
+
+                self.step();
+
+                if unsafe { sys::wb_robot_step(step_duration) } == -1 {
+                    break;
+                }
+            }
+
+            unsafe {
+                sys::wb_robot_cleanup();
+            }
+        }
+    }
 }
