@@ -1,6 +1,6 @@
 #![allow(clippy::approx_constant)]
 
-use webots_rs::bindings::WbDeviceTag;
+use webots_rs::sys::WbDeviceTag;
 
 fn main() {
     const INFINITY: f64 = 1.0 / 0.0;

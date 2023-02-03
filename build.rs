@@ -32,12 +32,7 @@ fn main() {
         .header("wrapper.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .clang_args(vec!["-I", include_path.to_str().unwrap()])
-        .blocklist_item("FP_INFINITE")
-        .blocklist_item("FP_NAN")
-        .blocklist_item("FP_NORMAL")
-        .blocklist_item("FP_SUBNORMAL")
-        .blocklist_item("FP_ZERO")
-        .blocklist_file(".*math.*")
+        .allowlist_function("wb.*")
         .generate()
         .expect("Unable to generate bindings");
 
