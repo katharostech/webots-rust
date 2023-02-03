@@ -66,7 +66,9 @@ pub mod robot {
 
     pub trait Robot {
         /// The time to advance during the next simulation step.
-        fn time_step(&self) -> Duration;
+        fn time_step(&self) -> Duration {
+            Duration::from_millis(64)
+        }
 
         /// Step the robot simulation
         fn step(&mut self);
