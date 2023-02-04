@@ -5,7 +5,7 @@ use std::time::Duration;
 use webots::prelude::*;
 
 const TIME_STEP: Duration = Duration::from_millis(64);
-const MAX_SPEED: f64 = 6.28;
+const MAX_SPEED: f64 = 4.28;
 
 struct MyRobot {
     distance_sensors: Vec<DistanceSensor>,
@@ -13,8 +13,12 @@ struct MyRobot {
     right_motor: Motor,
 }
 
-impl MyRobot {
-    fn new() -> Self {
+impl Robot for MyRobot {
+    fn time_step(&self) -> Duration {
+        TIME_STEP
+    }
+
+    fn init() -> Self {
         let distance_sensor_names = vec!["ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7"];
         let distance_sensors: Vec<DistanceSensor> = distance_sensor_names
             .iter()
@@ -38,12 +42,6 @@ impl MyRobot {
             left_motor,
             right_motor,
         }
-    }
-}
-
-impl Robot for MyRobot {
-    fn time_step(&self) -> Duration {
-        TIME_STEP
     }
 
     fn step(&mut self) {
@@ -81,8 +79,6 @@ impl Robot for MyRobot {
 }
 
 fn main() {
-    webots::init();
-
     println!("Rust controller has started");
-    MyRobot::new().run();
+    webots::run::<MyRobot>();
 }
