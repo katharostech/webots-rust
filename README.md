@@ -1,36 +1,60 @@
-# Webots controllers in Rust
-
-**Status**: experimental
+# Webots `libcontroller` Rust Bindings
 
 This is a reference project that shows how to build controllers for the [Webots robot simulator](https://cyberbotics.com) using the Rust programming language.
 
-## Getting Started
+## Running The Example
 
-1. Download and install [Webots](https://cyberbotics.com) for your operating system
-1. Install [Rust](https://www.rust-lang.org/learn/get-started) if you haven't already
-1. Clone this repository
-1. Run `make` to compile the Rust controller and copy it into place
-1. Open the `sample_project/worlds/my_first_simulation.wbt` file in Webots
-1. Run the simulation
+First you must install [Webots](https://cyberbotics.com) & [Rust](https://rust-lang.org).
 
-You should see "The Rust controller has started" in the Webots console.
+You can run the example by:
 
-To make changes to the controller, you can edit `src/main.rs` and then run `make` again. You might need to reset the simulation (File > Reset Simulation) or restart Webots to use the updated code.
+1. Install Webots & Rust.
+1. Clone this repository and switch folders to it.
+1. Run `cargo build --example rust_epuck_controller`
+1. Open up the `example` world in the `sample_project` folder in Webots, and run the simulation.
 
-## How this works
+If you make changes, simply re-build the example and restart the simulation!
 
-At compile time, I use [bindgen](https://github.com/rust-lang/rust-bindgen) to convert a list of Webots C header files (see `wrapper.h`) into Rust structures and types. Those types form a bridge between the Rust-based controller code and the Webots C library that does the hard work of interacting with the simulation engine. See `build.rs` and `bindings.rs` for more details.
+## Using in Your Own Project
 
-## Contributing
+> **Warning:** There is a `webots` crates.io package, but that is not this crate. Currently this
+> crate is only published on GitHub, and we may change the name to prevent confusion with the
+> crates.io crate.
 
-Improvements are welcome. If you have an idea, please open an issue so that we can discuss it.
+**`Cargo.toml`:**
 
-## TODO
+```toml
+[dependencies]
+webots = { git = "https://github.com/katharostech/webots-rust" }
+```
 
-- Improve API safety. While any of the Webots C functions can be called from Rust, many are marked as `unsafe` due to raw pointer usage. I have started wrapping a few of them in Rust functions (see `lib.rs`), but this approach doesn't scale very well given the size of the API.
-- More example controllers
-- Resolve "not FFI-safe" warnings somehow
+Now you can compile your crate to create a Webots controller.
+
+Once you have compiled the crate, you must copy or link your controller to a Webots project folder.
+
+Webots projects always have a folder named `worlds` and you will need to have a `controllers` folder next to that. Inside of that create a folder named after your controller, such as `my_rust_controller`. Finally, copy your built controller into that folder, and make sure it has the same name as your folder.
+
+Now, in the Webots program, you can select `my_rust_controller` as the controller for any robot!
+
+## How it Works
+
+[Bindgen](https://github.com/rust-lang/rust-bindgen) is used to generate bindings to the Webots C library at compile time. It will look in standard OS installation directories, or else use the `WEBOTS_PATH` environment variable to find your local Webots installation. For now, you must have it installed locally to compile this crate. We may change that soon.
+
+You can find the raw, generated bindings in the `webots::sys` module, and the rest of the crate contains idiomatic Rust bindings. Though the idiomatic bindings are incomplete, they are easy to write, and we will be extending them as time permits. It's simple to see how they are made, and to add your own if necessary. Pull requests are welcome!
 
 ## License
 
-MIT
+This project is licensed under either of
+
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+  <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or
+  <http://opensource.org/licenses/MIT>)
+
+at your option.
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this project by you, as defined in the Apache-2.0 license,
+shall be dual licensed as above, without any additional terms or conditions.

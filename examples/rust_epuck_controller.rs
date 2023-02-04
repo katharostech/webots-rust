@@ -5,7 +5,7 @@ use std::time::Duration;
 use webots::prelude::*;
 
 const TIME_STEP: Duration = Duration::from_millis(64);
-const MAX_SPEED: f64 = 4.28;
+const MAX_SPEED: f64 = 6.28;
 
 struct MyRobot {
     distance_sensors: Vec<DistanceSensor>,
