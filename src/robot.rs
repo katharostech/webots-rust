@@ -19,7 +19,7 @@ impl Device {
 pub trait Robot {
     /// The time to advance during the next simulation step.
     fn time_step(&self) -> Duration {
-        Duration::from_millis(64)
+        Duration::from_millis(unsafe { sys::wb_robot_get_basic_time_step().round() as u64 })
     }
 
     /// Initialize the robot.
