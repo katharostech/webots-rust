@@ -1,6 +1,9 @@
 use super::sys;
 
-use std::{ffi::CString, time::Duration};
+use std::{
+    ffi::{CStr, CString},
+    time::Duration,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Device {
@@ -13,6 +16,17 @@ impl Device {
         let tag = unsafe { sys::wb_robot_get_device(name.as_ptr()) };
 
         Self { tag }
+    }
+}
+
+pub struct RobotInfo;
+
+impl RobotInfo {
+    /// Get the URDF XML string for the robot.
+    pub fn urdf_xml() -> String {
+        let prefix = CString::default();
+        let ptr = unsafe { sys::wb_robot_get_urdf(prefix.as_ptr()) };
+        unsafe { CStr::from_ptr(ptr) }.to_str().unwrap().to_string()
     }
 }
 
