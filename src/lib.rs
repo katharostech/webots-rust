@@ -31,11 +31,11 @@ pub fn run<R: robot::Robot>() {
             .try_into()
             .expect("Duration too long");
 
-        robot.step();
-
         if unsafe { sys::wb_robot_step(step_duration) } == -1 {
             break;
         }
+
+        robot.step();
     }
 
     unsafe {
