@@ -78,5 +78,5 @@ impl Robot for MyRobot {
 
 fn main() {
     println!("Rust controller has started");
-    webots::run::<MyRobot>();
+    webots::run_robot::<MyRobot>();
 }

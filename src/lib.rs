@@ -19,7 +19,7 @@ pub mod robot;
 pub mod sensors;
 
 /// Run a Webots robot controller.
-pub fn run<R: robot::Robot>() {
+pub fn run_robot<R: robot::Robot>() {
     use std::convert::TryInto;
 
     unsafe {
