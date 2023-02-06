@@ -40,7 +40,7 @@ pub trait Robot {
     fn init() -> Self;
 
     /// Step the robot simulation
-    fn step(&mut self);
+    fn step(&mut self, time: Duration, delta_time: Duration);
 
     /// Run the robot controller.
     fn run(&mut self) {}

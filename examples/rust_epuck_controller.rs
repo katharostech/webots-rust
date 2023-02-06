@@ -1,7 +1,5 @@
 #![allow(clippy::approx_constant)]
 
-use std::time::Duration;
-
 use webots::prelude::*;
 
 const TIME_STEP: Duration = Duration::from_millis(64);
@@ -44,7 +42,7 @@ impl Robot for MyRobot {
         }
     }
 
-    fn step(&mut self) {
+    fn step(&mut self, _time: Duration, _delta_time: Duration) {
         let distance_values = self
             .distance_sensors
             .iter()

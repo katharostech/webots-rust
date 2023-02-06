@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 /// Raw, auto-generated bindings to Webots libcontroller C library.
 pub mod sys {
     #![allow(clippy::approx_constant)]
@@ -9,6 +11,7 @@ pub mod sys {
 
 pub mod prelude {
     pub use super::{motor::*, robot::*, sensors::*, JointType};
+    pub use std::time::Duration;
 }
 
 pub mod motor;
@@ -24,18 +27,22 @@ pub fn run<R: robot::Robot>() {
     }
 
     let mut robot = R::init();
+    let mut time = Duration::default();
     loop {
-        let step_duration = robot
+        let step_duration = robot.time_step();
+        let step_millis = robot
             .time_step()
             .as_millis()
             .try_into()
             .expect("Duration too long");
 
-        if unsafe { sys::wb_robot_step(step_duration) } == -1 {
+        if unsafe { sys::wb_robot_step(step_millis) } == -1 {
             break;
         }
 
-        robot.step();
+        time += step_duration;
+
+        robot.step(time, step_duration);
     }
 
     unsafe {
