@@ -1,6 +1,7 @@
 #![allow(clippy::approx_constant)]
 
 use webots::prelude::*;
+use std::time::Duration;
 
 const TIME_STEP: Duration = Duration::from_millis(64);
 const MAX_SPEED: f64 = 6.28;
@@ -42,7 +43,7 @@ impl Robot for MyRobot {
         }
     }
 
-    fn step(&mut self, _time: Duration, _delta_time: Duration) {
+    fn step(&mut self, _time: StepTime) {
         let distance_values = self
             .distance_sensors
             .iter()
