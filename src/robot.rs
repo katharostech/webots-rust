@@ -30,6 +30,14 @@ impl RobotInfo {
     }
 }
 
+/// The time information for this step.
+pub struct StepTime {
+    /// The ammount of time elapsed since the controller was initialized.
+    pub elapsed: Duration,
+    /// The amount of time that has passed since the last run of `step`.
+    pub delta: Duration,
+}
+
 pub trait Robot {
     /// The time to advance during the next simulation step.
     fn time_step(&self) -> Duration {
@@ -39,8 +47,8 @@ pub trait Robot {
     /// Initialize the robot.
     fn init() -> Self;
 
-    /// Step the robot simulation
-    fn step(&mut self, time: Duration, delta_time: Duration);
+    /// Step the robot simulation.
+    fn step(&mut self, time: StepTime);
 
     /// Run the robot controller.
     fn run(&mut self) {}

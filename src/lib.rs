@@ -11,7 +11,6 @@ pub mod sys {
 
 pub mod prelude {
     pub use super::{motor::*, robot::*, sensors::*, JointType};
-    pub use std::time::Duration;
 }
 
 pub mod motor;
@@ -27,22 +26,22 @@ pub fn run_robot<R: robot::Robot>() {
     }
 
     let mut robot = R::init();
-    let mut time = Duration::default();
+    let mut elapsed = Duration::default();
     loop {
-        let step_duration = robot.time_step();
-        let step_millis = robot
+        let delta = robot.time_step();
+        let delta_millis = robot
             .time_step()
             .as_millis()
             .try_into()
             .expect("Duration too long");
 
-        if unsafe { sys::wb_robot_step(step_millis) } == -1 {
+        if unsafe { sys::wb_robot_step(delta_millis) } == -1 {
             break;
         }
 
-        time += step_duration;
+        elapsed += delta;
 
-        robot.step(time, step_duration);
+        robot.step(robot::StepTime { elapsed, delta });
     }
 
     unsafe {
